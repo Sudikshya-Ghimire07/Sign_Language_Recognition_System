@@ -1,11 +1,11 @@
 # --- Import Required Libraries ---
+
 import tkinter as tk
 from tkinter import messagebox, filedialog, ttk, Toplevel, Label, Spinbox, StringVar, IntVar, BooleanVar, Checkbutton, Entry, Scale, HORIZONTAL, Frame, Text, Scrollbar, Canvas, WORD, BOTH, LEFT, RIGHT, Y, VERTICAL
 from PIL import Image, ImageTk
 import threading
 import os
 import subprocess
-import pyttsx3
 import cv2
 import csv
 import json
@@ -16,15 +16,13 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
 # ---------- SETTINGS ----------
+
 settings_file = "settings.json"
 
 default_settings = {
     "mode": "Accurate",
     "device_id": 0,
     "confidence_threshold": 70,
-    "tts_enabled": True,
-    "tts_language": "en",
-    "tts_slow": False,
     "camera_flip": False,
     "show_probabilities": False,
     "prediction_interval": 1,
@@ -47,7 +45,7 @@ def open_settings():
 
     win = Toplevel(root)
     win.title("Settings")
-    win.geometry("550x750")  # Adjusted to fit new options
+    win.geometry("550x600")
     win.configure(bg="#eef6fb")
     win.resizable(False, False)
 
@@ -85,35 +83,13 @@ def open_settings():
     confidence_slider.pack()
     add_tip("Minimum confidence to accept a prediction.")
 
-    # --- TTS Settings ---
-    add_section("Text-to-Speech (TTS)")
-
-    tts_enabled_var = BooleanVar(value=settings.get("tts_enabled", True))
-    tts_check = Checkbutton(win, text="Enable TTS Announcements", variable=tts_enabled_var,
-                            bg="#eef6fb", font=label_font)
-    tts_check.pack(pady=5)
-
-    Label(win, text="TTS Language Code:", font=label_font, bg="#eef6fb").pack()
-    tts_language_var = StringVar(value=settings.get("tts_language", "en"))
-    tts_language_entry = Entry(win, textvariable=tts_language_var, font=("Helvetica", 10), width=10)
-    tts_language_entry.pack()
-    add_tip("e.g., en = English, es = Spanish, fr = French")
-
-    tts_slow_var = BooleanVar(value=settings.get("tts_slow", False))
-    tts_slow_check = Checkbutton(win, text="Slow down TTS voice", variable=tts_slow_var,
-                                 bg="#eef6fb", font=label_font)
-    tts_slow_check.pack(pady=5)
-
     # --- Save Settings Button ---
     def save():
         updated_settings = {
             "mode": mode_var.get(),
             "device_id": device_var.get(),
             "confidence_threshold": confidence_var.get(),
-            "tts_enabled": tts_enabled_var.get(),
-            "tts_language": tts_language_var.get(),
-            "tts_slow": tts_slow_var.get(),
-            **{k: settings.get(k, v) for k, v in default_settings.items() if k not in ["mode", "device_id", "confidence_threshold", "tts_enabled", "tts_language", "tts_slow"]}
+            **{k: settings.get(k, v) for k, v in default_settings.items() if k not in ["mode", "device_id", "confidence_threshold"]}
         }
         save_settings(updated_settings)
         messagebox.showinfo("Settings", "Settings saved successfully!")
@@ -124,6 +100,7 @@ def open_settings():
               activebackground="#393E46", padx=20, pady=10).pack(pady=20)
 
 # ---------- FEEDBACK ----------
+
 def open_feedback():
     feedback_win = Toplevel(root)
     feedback_win.title("Feedback")
@@ -159,6 +136,7 @@ def open_feedback():
             messagebox.showwarning("Empty", "⚠️ Please enter your feedback before submitting.")
 
     ttk.Button(feedback_win, text="Submit Feedback", command=submit_feedback).pack(pady=20)
+
 
 # ---------- CHARTS ----------
 def show_charts(title, folder):
@@ -207,21 +185,6 @@ def open_chart_window():
     for name, path in charts.items():
         ttk.Button(win, text=f"{name} Chart", command=lambda p=path, n=name: show_charts(n, p)).pack(pady=10)
 
-
-        
-# --- Initialize Text-to-Speech Engine ---
-tts_engine = pyttsx3.init()
-tts_on = False
-
-def toggle_tts(event=None):
-    global tts_on
-    tts_on = not tts_on
-    if tts_on:
-        tts_engine.say("Text to Speech Enabled")
-    else:
-        tts_engine.say("Text to Speech Disabled")
-    tts_engine.runAndWait()
-
 # --- Utility Function to Load and Resize Images for Buttons ---
 def load_image(path, size=(100, 100)):
     img = Image.open(path)
@@ -244,13 +207,11 @@ def threaded_function(func, description):
         messagebox.showinfo("Success", f"{description} Completed Successfully!")
     threading.Thread(target=run).start()
 
-
 # --- Setup Main Tkinter Window ---
 root = tk.Tk()
 root.title("Sign Language Recognition Pro")
 root.geometry("1300x750")
 root.configure(bg="#121212")
-root.bind('<t>', toggle_tts)
 
 header = tk.Label(root, text="Sign Language Recognition System", font=("Arial Rounded MT Bold", 30),
                   fg="#00ADB5", bg="#121212")
@@ -261,27 +222,26 @@ progress.pack(pady=10)
 
 # Load All Button Icons
 icons = {
-    "ASL": load_image("E:/Sign_Language_Detection/ASL/ASL.png"),
-    "Facial": load_image("E:/Sign_Language_Detection/Facial_expression/Facial.png"),
-    "ASL + Facial": load_image("E:/Sign_Language_Detection/merged/images/ASLCombined.png"),
-    "BSL": load_image("E:/Sign_Language_Detection/BSL/BSL.png"),
-    "BSL + Facial": load_image("E:/Sign_Language_Detection/merged/images/BSLCombined.png"),
-    "Settings": load_image("E:/Sign_Language_Detection/merged/images/translation.png"),
-    "Charts": load_image("E:/Sign_Language_Detection/merged/images/charts.png"),
-    "Feedback": load_image("E:/Sign_Language_Detection/merged/images/feedback.png")
+    "ASL": load_image("E:/Sign_Language_Recognition_System/ASL/ASL.png"),
+    "Facial": load_image("E:/Sign_Language_Recognition_System/Facial_expression/Facial.png"),
+    "ASL + Facial": load_image("E:/Sign_Language_Recognition_System/merged/images/ASLCombined.png"),
+    "BSL": load_image("E:/Sign_Language_Recognition_System/BSL/BSL.png"),
+    "BSL + Facial": load_image("E:/Sign_Language_Recognition_System/merged/images/BSLCombined.png"),
+    "Settings": load_image("E:/Sign_Language_Recognition_System/merged/images/translation.png"),
+    "Charts": load_image("E:/Sign_Language_Recognition_System/merged/images/charts.png"),
+    "Feedback": load_image("E:/Sign_Language_Recognition_System/merged/images/feedback.png")
 }
 
 # Define Buttons
 buttons = [
-    ("ASL Detection", lambda: launch_detection("ASL Detection", "cam_test.py", "E:/Sign_Language_Detection/ASL/src"), "ASL"),
-     ("BSL Detection", lambda: launch_detection("BSL Detection", "cam_test.py", "E:/Sign_Language_Detection/BSL/src"), "BSL"),
-    ("Facial Emotion", lambda: launch_detection("Facial Emotion", "realtimedetection.py", "E:/Sign_Language_Detection/Facial_expression/src"), "Facial"),
-    ("ASL + Facial", lambda: launch_detection("Combined ASL + Facial", "ASLcombined.py", "E:/Sign_Language_Detection/merged"), "ASL + Facial"),
-    ("BSL + Facial", lambda: launch_detection("BSL + Facial", "BSLcombined.py", "E:/Sign_Language_Detection/merged"), "BSL + Facial"),
+    ("ASL Detection", lambda: launch_detection("Sign_Language_Recognition_System - ASL Detection", "cam_test.py", "E:/Sign_Language_Recognition_System/ASL/src"), "ASL"),
+    ("BSL Detection", lambda: launch_detection("Sign_Language_Recognition_System - BSL Detection", "cam_test.py", "E:/Sign_Language_Recognition_System/BSL/src"), "BSL"),
+    ("Facial Emotion", lambda: launch_detection("Sign_Language_Recognition_System - Facial Emotion", "realtimedetection.py", "E:/Sign_Language_Recognition_System/Facial_expression/src"), "Facial"),
+    ("ASL + Facial", lambda: launch_detection("Sign_Language_Recognition_System - Combined ASL + Facial", "ASLcombined.py", "E:/Sign_Language_Recognition_System/merged"), "ASL + Facial"),
+    ("BSL + Facial", lambda: launch_detection("Sign_Language_Recognition_System - BSL + Facial", "BSLcombined.py", "E:/Sign_Language_Recognition_System/merged"), "BSL + Facial"),
     ("Settings", lambda: open_settings(), "Settings"),
     ("Charts", open_chart_window, "Charts"),
     ("Feedback", lambda: open_feedback(), "Feedback"),
-    
 ]
 
 frame = tk.Frame(root, bg="#121212")
