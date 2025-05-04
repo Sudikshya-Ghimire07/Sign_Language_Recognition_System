@@ -1,0 +1,12 @@
+{
+    "mode": "Fast",
+    "device_id": 1,
+    "confidence_threshold": 100,
+    "tts_enabled": true,
+    "tts_language": "es",
+    "tts_slow": true,
+    "camera_flip": false,
+    "show_probabilities": false,
+    "prediction_interval": 1,
+    "save_screenshots": false
+}
